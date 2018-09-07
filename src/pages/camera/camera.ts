@@ -3,6 +3,9 @@ import { IonicPage, NavController, NavParams, ActionSheetController, Platform } 
 
 import { FilePath } from '@ionic-native/file-path';
 import { Camera, CameraOptions } from '@ionic-native/camera';
+import { SQLite, SQLiteObject } from '@ionic-native/sqlite';
+import { CameraListPage } from '../camera-list/camera-list';
+
 /**
  * Generated class for the CameraPage page.
  *
@@ -15,18 +18,31 @@ import { Camera, CameraOptions } from '@ionic-native/camera';
   selector: 'page-camera',
   templateUrl: 'camera.html',
 })
+
 export class CameraPage {
   myPhoto: string;
 
   constructor(
-    public navCtrl: NavController, 
+    public navCtrl: NavController,
     public navParams: NavParams,
     private actionSheet: ActionSheetController,
     private camera: Camera,
     private filePath: FilePath,
-    private platform: Platform
+    private platform: Platform,
+    private sqlite: SQLite
   ) {
+  }
 
+  ngOnInit() {
+    this.sqlite.create({
+      name:'data.db',
+      location: 'default'
+    })
+      .then((db:SQLiteObject) => {
+        db.executeSql('CREATE TABLE photos(url VARCHAR(250))')
+          .then(()=> console.log('table created'))
+          .catch(e => console.log(e));
+      });
   }
 
   ionViewDidLoad() {
@@ -57,7 +73,21 @@ export class CameraPage {
     });
 
     actionSheet.present();
-}
+  }
+
+  saveImage() {
+    this.sqlite.create({
+      name: 'data.db',
+      location: 'default'
+    })
+      .then((db: SQLiteObject) => {
+        return db.executeSql('insert into photos (url) values ("' + this.myPhoto + '")')
+      })
+      .then(() => {
+        this.navCtrl.push(CameraListPage)
+      })
+      .catch(e => console.log(e));
+  }
 
   private takePhoto(source: number = 1, mediaType: number = 0) {
     const options: CameraOptions = {
@@ -66,7 +96,7 @@ export class CameraPage {
       sourceType: source,
       destinationType: this.camera.DestinationType.FILE_URI,
       encodingType: this.camera.EncodingType.JPEG
-    }
+    };
     this.camera.getPicture(options)
       .then((imageData) => {
         if (source == 0 && this.platform.is('android')) {
@@ -78,12 +108,8 @@ export class CameraPage {
           this.myPhoto = imageData;
         }
       })
-      .catch((err)=> {
-        console.log(err)
+      .catch((err) => {
+        console.log(err);
       })
   }
-  saveImage() {
-
-  }
-
 }

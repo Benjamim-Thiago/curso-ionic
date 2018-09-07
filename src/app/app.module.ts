@@ -4,6 +4,7 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
 import { Camera } from '@ionic-native/camera';
 import { FilePath } from '@ionic-native/file-path';
+import { SQLite } from '@ionic-native/sqlite';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -39,6 +40,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     SplashScreen,
     Camera,
     FilePath,
+    SQLite,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
